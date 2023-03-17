@@ -6,7 +6,7 @@ import {
   useColorScheme,
   Platform,
 } from "react-native";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { CustomButton, CustomTextInput } from "../ui";
 import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
@@ -208,7 +208,7 @@ export default function Generator({ navigation }: { navigation: any }) {
           ))}
         {imageUrl && (
           <>
-            <View className="mt-4 rounded bg-slate-300 w-full w-10/12">
+            <View className="mt-4 rounded bg-slate-300 w-10/12">
               <Image
                 source={{
                   uri: imageUrl,
