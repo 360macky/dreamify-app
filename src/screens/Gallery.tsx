@@ -72,12 +72,15 @@ export default function Gallery({ navigation }: { navigation: any }) {
       "You have generated # images. Want to share it with your friends?",
       "There are # images in your gallery. That's great!",
       "Great! In your gallery, you have # images.",
-    ]
+    ];
 
     const randomIndex = Math.floor(Math.random() * randomStrings.length);
 
-    return randomStrings[randomIndex].replace("#", predictions.length.toString());
-  }
+    return randomStrings[randomIndex].replace(
+      "#",
+      predictions.length.toString()
+    );
+  };
 
   return (
     <View className="flex flex-1">
@@ -91,9 +94,7 @@ export default function Gallery({ navigation }: { navigation: any }) {
               {predictions.length === 1 && (
                 <>Great! This is your first generated image.</>
               )}
-              {predictions.length > 1 && (
-                <>{getRandomMessage()}</>
-              )}
+              {predictions.length > 1 && <>{getRandomMessage()}</>}
             </Text>
           </View>
           <View className="w-10/12 pt-4 gap-y-6 pb-4">
