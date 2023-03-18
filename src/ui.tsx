@@ -18,7 +18,7 @@ export const CustomTextInput = (props: TextInputProps) => {
 
 interface CustomButtonProps extends PressableProps {
   title: string;
-  variant?: "primary" | "secondary";
+  variant?: "primary" | "secondary" | "outline";
 }
 
 export const CustomButton = (props: CustomButtonProps) => {
@@ -26,9 +26,12 @@ export const CustomButton = (props: CustomButtonProps) => {
     <Pressable
       className={classNames(
         "w-10/12 mt-2 p-2 rounded",
-        props.variant === "primary"
-          ? "bg-slate-800 active:bg-slate-900 dark:bg-white dark:active:bg-slate-300"
-          : "dark:bg-slate-900 active:bg-slate-100 dark:active:bg-slate-700 border border-slate-900"
+        props.variant === "primary" &&
+          "bg-slate-800 active:bg-slate-900 dark:bg-white dark:active:bg-slate-300",
+        props.variant === "secondary" &&
+          "dark:bg-slate-900 active:bg-slate-100 dark:active:bg-slate-700 border border-slate-900",
+        props.variant === "outline" &&
+          "dark:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-500 border border-slate-500"
       )}
       {...props}
     >
