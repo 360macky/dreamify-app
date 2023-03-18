@@ -2,10 +2,6 @@ import { View, Text, Alert, Share } from "react-native";
 import { CustomButton, CustomTextInput } from "../ui";
 
 export default function Index({ navigation }: { navigation: any }) {
-  const startGenerator = () => {
-    navigation.navigate("Generator");
-  };
-
   const shareApp = async () => {
     const message =
       "I'm creating images generated with Artificial Intelligence with https://dreamify.art";
@@ -31,19 +27,20 @@ export default function Index({ navigation }: { navigation: any }) {
           Generate AI images just from text!
         </Text>
         <CustomButton
-          onPress={startGenerator}
+          onPress={() => navigation.navigate("Generator")}
           title="Open generator"
           variant="primary"
         />
         <CustomButton
-          onPress={shareApp}
-          title="Share"
+          onPress={() => {
+            navigation.navigate("Gallery");
+          }}
+          title="Gallery"
           variant="secondary"
         />
+        <CustomButton onPress={shareApp} title="Share" variant="secondary" />
         <CustomButton
-          onPress={() => {
-            navigation.navigate("About");
-          }}
+          onPress={() => navigation.navigate("About")}
           title="About"
           variant="secondary"
         />
