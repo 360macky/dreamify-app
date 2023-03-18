@@ -29,7 +29,7 @@ export const CustomButton = (props: CustomButtonProps) => {
         props.variant === "primary" &&
           "bg-slate-800 active:bg-slate-900 dark:bg-white dark:active:bg-slate-300",
         props.variant === "secondary" &&
-          "dark:bg-slate-900 active:bg-slate-100 dark:active:bg-slate-700 border border-slate-900",
+          "dark:bg-slate-900 active:bg-slate-100 dark:active:bg-slate-700 border border-slate-300 dark:border-slate-700",
         props.variant === "outline" &&
           "dark:bg-slate-700 active:bg-slate-100 dark:active:bg-slate-500 border border-slate-500"
       )}
@@ -40,7 +40,7 @@ export const CustomButton = (props: CustomButtonProps) => {
           "text-[16px] font-bold text-center text-slate-100 dark:text-slate-900",
           props.variant === "primary"
             ? "dark:text-slate-900"
-            : "text-slate-900 dark:text-white"
+            : "text-slate-900 dark:text-slate-50"
         )}
       >
         {props.title}
