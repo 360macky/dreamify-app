@@ -12,6 +12,8 @@ import * as MediaLibrary from "expo-media-library";
 import * as FileSystem from "expo-file-system";
 import * as Progress from "react-native-progress";
 import * as Sharing from "expo-sharing";
+import * as SecureStore from "expo-secure-store";
+import uuid from "react-native-uuid";
 
 /**
  * @name PredictionStatus
@@ -24,8 +26,15 @@ const BASE_URL = "https://dreamify.art";
 
 const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
 
+interface Prediction {
+  id: string;
+  imageUrl: string;
+  prompt: string;
+}
+
 export default function Generator({ navigation }: { navigation: any }) {
   let colorScheme = useColorScheme();
+  const [generations, setGenerations] = useState<Prediction[]>([]);
 
   const [prompt, setPrompt] = useState("");
   const [imageUrl, setImageUrl] = useState("");
@@ -34,6 +43,33 @@ export default function Generator({ navigation }: { navigation: any }) {
   const [percentage, setPercentage] = useState<number>(0.0);
   const [predictionStatus, setPredictionStatus] =
     useState<PredictionStatus>("initial");
+
+  async function saveData(imageUrl: string, prompt: string) {
+    const newPair = {
+      id: uuid.v4(),
+      imageUrl,
+      prompt,
+    };
+
+    try {
+      const existingDataString = await SecureStore.getItemAsync("dreamifyData");
+      let existingData = [];
+
+      if (existingDataString) {
+        existingData = JSON.parse(existingDataString);
+      }
+
+      existingData.push(newPair);
+
+      await SecureStore.setItemAsync(
+        "dreamifyData",
+        JSON.stringify(existingData)
+      );
+      console.log("Data saved successfully");
+    } catch (error) {
+      console.error("Error saving data:", error);
+    }
+  }
 
   async function requestPermission() {
     const { status } = await MediaLibrary.requestPermissionsAsync();
@@ -168,6 +204,7 @@ export default function Generator({ navigation }: { navigation: any }) {
       if (prediction.status === "succeeded") {
         setImageUrl(prediction.output[prediction.output.length - 1]);
         setPredictionStatus("succeeded");
+        saveData(prediction.output[prediction.output.length - 1], prompt);
       }
       setPrediction(prediction);
     }
