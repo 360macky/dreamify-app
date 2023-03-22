@@ -2,8 +2,6 @@ import { View, Text, Linking } from "react-native";
 import { CustomButton } from "../ui";
 import { version } from "../../package.json";
 
-// Get version of project from package.json
-
 export default function Result() {
   return (
     <View className="flex-1 pt-8 items-center justify-start bg-white dark:bg-slate-800">
@@ -18,6 +16,14 @@ export default function Result() {
           title="Source code"
           onPress={() =>
             Linking.openURL("https://github.com/360macky/dreamify")
+          }
+        />
+        <CustomButton
+          className="mt-4"
+          variant="secondary"
+          title="Web version"
+          onPress={() =>
+            Linking.openURL("https://dreamify.art/")
           }
         />
         <View className="mt-12">
