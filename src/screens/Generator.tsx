@@ -15,6 +15,7 @@ import * as Progress from "react-native-progress";
 import * as Sharing from "expo-sharing";
 import * as SecureStore from "expo-secure-store";
 import uuid from "react-native-uuid";
+import { saveImageToDevice } from "../utils";
 
 /**
  * @name PredictionStatus
@@ -129,40 +130,18 @@ export default function Generator({ navigation }: { navigation: any }) {
     return Number(lastPercentage);
   };
 
-  async function saveExternalImageToGallery(url: string) {
-    setIsImageSavingLoading(true);
-    if (!(await requestPermission())) {
-      return;
-    }
-
+  const saveExternalImageToGallery = async (url: string) => {
     try {
-      const { uri } = await FileSystem.downloadAsync(
-        url,
-        FileSystem.cacheDirectory + "temp-image.jpg"
-      );
-
-      // Save the image to the gallery
-      const asset = await MediaLibrary.createAssetAsync(uri);
-
-      const albumName = "Dreamify";
-      const album = await MediaLibrary.getAlbumAsync(albumName);
-      if (album === null) {
-        await MediaLibrary.createAlbumAsync(albumName, asset, false);
-      } else {
-        await MediaLibrary.addAssetsToAlbumAsync([asset], album, false);
-      }
-
-      Alert.alert("Great!", "Image saved to gallery!");
+      setIsImageSavingLoading(true);
+      await saveImageToDevice(url);
     } catch (error) {
-      console.error("Error saving image:", error);
       Alert.alert(
-        "Error",
         "An error occurred while saving the image. Please try again."
       );
     } finally {
       setIsImageSavingLoading(false);
     }
-  }
+  };
 
   function roundToTwoDecimals(num: number): number {
     return Math.round((num + Number.EPSILON) * 100) / 100;
