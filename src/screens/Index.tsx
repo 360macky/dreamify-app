@@ -1,5 +1,5 @@
 import { View, Text, Alert, Share } from "react-native";
-import { CustomButton, CustomTextInput } from "../ui";
+import { CustomButton } from "../ui";
 
 export default function Index({ navigation }: { navigation: any }) {
   const shareApp = async () => {
