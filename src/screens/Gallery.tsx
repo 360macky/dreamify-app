@@ -3,20 +3,18 @@ import * as SecureStore from "expo-secure-store";
 import { View, Text, Image, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { CustomButton } from "../ui";
+import { saveImageToDevice } from "../utils";
 
-async function fetchData() {
+async function fetchDreamifyData() {
   try {
     const dataString = await SecureStore.getItemAsync("dreamifyData");
     if (dataString) {
       const data = JSON.parse(dataString);
-      console.log("Data fetched successfully:", data);
       return data;
     } else {
-      console.log("No data found");
       return [];
     }
   } catch (error) {
-    console.error("Error fetching data:", error);
     return [];
   }
 }
@@ -27,12 +25,13 @@ interface Prediction {
   prompt: string;
 }
 
-export default function Gallery({ navigation }: { navigation: any }) {
+export default function Gallery() {
   const [predictions, setPredictions] = useState([]);
+  const [imageUrlSaving, setImageUrlSaving] = useState("");
 
   useEffect(() => {
     const fetchDataAsync = async () => {
-      const fetchedData = await fetchData();
+      const fetchedData = await fetchDreamifyData();
       setPredictions(fetchedData);
       console.log(predictions);
     };
@@ -40,7 +39,16 @@ export default function Gallery({ navigation }: { navigation: any }) {
     fetchDataAsync();
   }, []);
 
-  const saveImage = (imageUrl: string) => {};
+  const saveImage = async (imageUrl: string) => {
+    try {
+      setImageUrlSaving(imageUrl);
+      await saveImageToDevice(imageUrl);
+    } catch (error) {
+      Alert.alert("Error saving image");
+    } finally {
+      setImageUrlSaving("");
+    }
+  };
 
   const deleteImage = async (id: string) => {
     try {
@@ -59,9 +67,10 @@ export default function Gallery({ navigation }: { navigation: any }) {
         "dreamifyData",
         JSON.stringify(updatedData)
       );
-      console.log("Data deleted successfully");
+
+      setPredictions(updatedData);
     } catch (error) {
-      console.error("Error deleting data:", error);
+      Alert.alert("Error", "Something went wrong. Please try again.");
     }
   };
 
@@ -117,15 +126,20 @@ export default function Gallery({ navigation }: { navigation: any }) {
                   <CustomButton
                     className="mt-4 flex-1"
                     variant="outline"
-                    title="Save"
-                    onPress={() => {}}
+                    title={
+                      imageUrlSaving === prediction.imageUrl
+                        ? "Saving..."
+                        : "Save"
+                    }
+                    onPress={() => {
+                      saveImage(prediction.imageUrl);
+                    }}
                   />
                   <CustomButton
                     className="mt-4 flex-1"
                     variant="outline"
                     title="Delete"
                     onPress={() => {
-                      // Ask the user with an alert if they want to delete the image, if so delete using the deleteImage function with the id of the image:
                       Alert.alert(
                         "Delete image",
                         "Are you sure you want to delete this image?",
