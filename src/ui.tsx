@@ -10,7 +10,7 @@ import classNames from "classnames";
 export const CustomTextInput = (props: TextInputProps) => {
   return (
     <TextInput
-      className="bg-white dark:bg-slate-800 border focus:bg-slate-50 dark:focus:bg-slate-900 border-slate-800 dark:border-white p-2 mt-2 rounded w-10/12 dark:text-white text-[16px]"
+      className="bg-white dark:bg-slate-800 border focus:bg-slate-50 dark:focus:bg-slate-900 border-slate-700 dark:border-white p-2 mt-2 rounded w-10/12 dark:text-white text-[16px]"
       {...props}
     />
   );
