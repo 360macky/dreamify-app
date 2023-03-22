@@ -5,6 +5,7 @@ import {
   Image,
   useColorScheme,
   Platform,
+  Keyboard,
 } from "react-native";
 import { useState } from "react";
 import { CustomButton, CustomTextInput } from "../ui";
@@ -20,7 +21,12 @@ import uuid from "react-native-uuid";
  * @description The status of a prediction not related to the Replicate API
  * @type {string}
  */
-type PredictionStatus = "initial" | "loading" | "error" | "succeeded";
+type PredictionStatus =
+  | "initial"
+  | "starting"
+  | "loading"
+  | "error"
+  | "succeeded";
 
 const BASE_URL = "https://dreamify.art";
 
@@ -40,6 +46,8 @@ export default function Generator({ navigation }: { navigation: any }) {
   const [imageUrl, setImageUrl] = useState("");
   const [error, setError] = useState<string>("");
   const [prediction, setPrediction] = useState<any>(null);
+  const [isImageSavingLoading, setIsImageSavingLoading] = useState(false);
+  const [isImageSharingLoading, setIsImageSharingLoading] = useState(false);
   const [percentage, setPercentage] = useState<number>(0.0);
   const [predictionStatus, setPredictionStatus] =
     useState<PredictionStatus>("initial");
@@ -84,6 +92,7 @@ export default function Generator({ navigation }: { navigation: any }) {
   }
 
   async function shareImage(url: string) {
+    setIsImageSharingLoading(true);
     try {
       // Check if the sharing API is available on the device
       const isAvailable = await Sharing.isAvailableAsync();
@@ -105,6 +114,8 @@ export default function Generator({ navigation }: { navigation: any }) {
       Alert.alert(
         "An error occurred while sharing the image. Please try again."
       );
+    } finally {
+      setIsImageSharingLoading(false);
     }
   }
 
@@ -119,13 +130,12 @@ export default function Generator({ navigation }: { navigation: any }) {
   };
 
   async function saveExternalImageToGallery(url: string) {
-    // Make sure the user granted permission
+    setIsImageSavingLoading(true);
     if (!(await requestPermission())) {
       return;
     }
 
     try {
-      // Download the image to a temporary location
       const { uri } = await FileSystem.downloadAsync(
         url,
         FileSystem.cacheDirectory + "temp-image.jpg"
@@ -149,6 +159,8 @@ export default function Generator({ navigation }: { navigation: any }) {
         "Error",
         "An error occurred while saving the image. Please try again."
       );
+    } finally {
+      setIsImageSavingLoading(false);
     }
   }
 
@@ -183,7 +195,7 @@ export default function Generator({ navigation }: { navigation: any }) {
     }
 
     setPrediction(prediction);
-    setPredictionStatus("loading");
+    setPredictionStatus("starting");
 
     // Poll for prediction status
     while (
@@ -193,9 +205,12 @@ export default function Generator({ navigation }: { navigation: any }) {
       await sleep(1000);
       const response = await fetch(`${BASE_URL}/api/image/` + prediction.id);
       prediction = await response.json();
-      setPercentage(
-        roundToTwoDecimals(getLatestPercentage(prediction.logs) / 100)
-      );
+      if (prediction.status === "processing") {
+        setPredictionStatus("loading");
+        setPercentage(
+          roundToTwoDecimals(getLatestPercentage(prediction.logs) / 100)
+        );
+      }
       if (response.status !== 200) {
         setError(prediction.detail);
         setPredictionStatus("error");
@@ -222,11 +237,26 @@ export default function Generator({ navigation }: { navigation: any }) {
           onChangeText={setPrompt}
           returnKeyType="done"
           maxLength={84}
+          editable={
+            predictionStatus === "initial" || predictionStatus === "error"
+          }
         />
         <CustomButton
-          title="Generate"
+          title={
+            predictionStatus === "starting" || predictionStatus === "loading"
+              ? "Generating..."
+              : "Generate"
+          }
           variant="primary"
-          onPress={onGenerateImage}
+          onPress={() => {
+            if (
+              predictionStatus === "initial" ||
+              predictionStatus === "error"
+            ) {
+              Keyboard.dismiss();
+              onGenerateImage();
+            }
+          }}
         />
         {predictionStatus === "loading" &&
           (Platform.OS === "ios" ? (
@@ -235,14 +265,22 @@ export default function Generator({ navigation }: { navigation: any }) {
                 progress={percentage}
                 width={null}
                 color={colorScheme === "dark" ? "#ffffff" : "#000000"}
-                className=""
               />
             </View>
           ) : (
             <View className="mt-2 flex w-10/12 justify-center items-center">
-              <Text>Generating image at {percentage * 100}%</Text>
+              <Text className="dark:text-white">
+                Generating image at {percentage * 100}%
+              </Text>
             </View>
           ))}
+        {predictionStatus === "starting" && (
+          <View className="mt-2 flex w-10/12 justify-center items-center">
+            <Text className="dark:text-white">
+              Starting image diffusion model...
+            </Text>
+          </View>
+        )}
         {imageUrl && (
           <>
             <View className="mt-4 rounded bg-slate-300 w-10/12">
@@ -255,12 +293,16 @@ export default function Generator({ navigation }: { navigation: any }) {
               />
             </View>
             <CustomButton
-              title="Save to gallery"
+              title={isImageSavingLoading ? "Saving..." : "Save to device"}
               onPress={() => saveExternalImageToGallery(imageUrl)}
+              variant="secondary"
             />
             <CustomButton
-              title="Share instantly"
+              title={
+                isImageSharingLoading ? "Sharing..." : "Share with friends"
+              }
               onPress={() => shareImage(imageUrl)}
+              variant="secondary"
             />
           </>
         )}
